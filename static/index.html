@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synthetic Fraud Generator — Privacy-Safe Fraud Data</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-dim: #388bfd;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --radius: 10px;
+      --font: 'DM Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      letter-spacing: -0.02em;
+    }
+    .tagline {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 1.5rem;
+      background: var(--surface);
+      padding: 0.25rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .tabs button {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-weight: 500;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+    }
+    .tabs button:hover { color: var(--text); }
+    .tabs button.active {
+      background: var(--surface2);
+      color: var(--accent);
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+    .preset-btn {
+      padding: 1rem;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      text-align: left;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .preset-btn:hover {
+      border-color: var(--accent);
+      background: rgba(56, 139, 253, 0.08);
+    }
+    .preset-btn strong { display: block; margin-bottom: 0.25rem; }
+    .preset-btn span { color: var(--text-muted); font-size: 0.8rem; }
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .form-group {
+      flex: 1;
+      min-width: 140px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .form-group small {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: 1rem;
+      height: 1rem;
+      accent-color: var(--accent);
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+    .btn {
+      padding: 0.6rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: filter 0.15s, transform 0.05s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-download {
+      background: var(--success);
+      color: #fff;
+    }
+    .btn-download:hover { filter: brightness(1.1); }
+    .btn-download:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .message {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    .message.info { background: rgba(56, 139, 253, 0.15); border: 1px solid var(--accent-dim); }
+    .message.error { background: rgba(248, 81, 73, 0.15); border: 1px solid var(--danger); }
+    .message.success { background: rgba(63, 185, 80, 0.15); border: 1px solid var(--success); }
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+    }
+    .preview-table th, .preview-table td {
+      padding: 0.4rem 0.6rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-table th { color: var(--text-muted); font-weight: 500; }
+    .preview-table tr:hover td { background: var(--surface2); }
+    .stats-bar {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: var(--surface2);
+      border-radius: 8px;
+    }
+    .stats-bar span { font-size: 0.85rem; }
+    .stats-bar strong { color: var(--accent); }
+    .edu-section {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .edu-section h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+    }
+    .edu-section p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+    .spinner {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Synthetic Fraud Generator</h1>
+      <p class="tagline">Privacy-safe, realistic fraud datasets for education and machine learning</p>
+    </header>
+
+    <div class="tabs">
+      <button type="button" class="tab-btn active" data-tab="simple">Simple</button>
+      <button type="button" class="tab-btn" data-tab="expert">Expert</button>
+      <button type="button" class="tab-btn" data-tab="learn">Learn</button>
+    </div>
+
+    <div id="panel-simple" class="panel active">
+      <div class="card">
+        <h2>Choose a preset</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">One click to get a ready-made dataset.</p>
+        <div class="preset-grid" id="preset-grid"></div>
+      </div>
+      <div class="card">
+        <h2>Quick options</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Number of transactions</label>
+            <input type="number" id="simple-num" min="100" max="100000" value="1000" />
+          </div>
+          <div class="form-group">
+            <label>Fraud % (0–100)</label>
+            <input type="number" id="simple-fraud" min="0" max="100" step="0.5" value="2" />
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="btn-generate-simple">Generate dataset</button>
+          <button type="button" class="btn btn-download" id="btn-download-csv" disabled>Download CSV</button>
+          <button type="button" class="btn btn-secondary" id="btn-download-json" disabled>Download JSON</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Save to database</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Generate data and insert it into a SQLite database (file on the server).</p>
+        <div class="form-row">
+          <div class="form-group" style="flex: 2;">
+            <label>Database path</label>
+            <input type="text" id="db-path" value="data/fraud_data.db" placeholder="data/fraud_data.db" />
+            <small>Relative to project folder. Folder is created if needed.</small>
+          </div>
+          <div class="form-group">
+            <label>Table name</label>
+            <input type="text" id="db-table" value="transactions" placeholder="transactions" />
+          </div>
+          <div class="form-group">
+            <label>If table exists</label>
+            <select id="db-if-exists">
+              <option value="append">Append rows</option>
+              <option value="replace">Replace table</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="btn-save-to-db">Generate and save to database</button>
+        </div>
+        <div id="db-message"></div>
+      </div>
+      <div class="card">
+        <h2>Load from database</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Preview or export data from an existing SQLite file (server path).</p>
+        <div class="form-row">
+          <div class="form-group" style="flex: 2;">
+            <label>Database path</label>
+            <input type="text" id="load-db-path" value="data/fraud_data.db" placeholder="data/fraud_data.db" />
+          </div>
+          <div class="form-group">
+            <label>Table</label>
+            <input type="text" id="load-db-table" value="transactions" />
+          </div>
+          <div class="form-group">
+            <label>Max rows (preview)</label>
+            <input type="number" id="load-db-limit" value="500" min="1" max="10000" />
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" id="btn-load-from-db">Load from database</button>
+        </div>
+        <div id="load-db-message"></div>
+        <div id="load-db-preview" class="card" style="display: none; margin-top: 0.75rem;">
+          <div class="stats-bar" id="load-stats-bar"></div>
+          <div style="overflow-x: auto;">
+            <table class="preview-table" id="load-preview-table"></table>
+          </div>
+        </div>
+      </div>
+      <div id="simple-message"></div>
+      <div id="simple-preview" class="card" style="display: none;">
+        <h2>Preview</h2>
+        <div class="stats-bar" id="stats-bar"></div>
+        <div style="overflow-x: auto;">
+          <table class="preview-table" id="preview-table"></table>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-expert" class="panel">
+      <div class="card">
+        <h2>Generator settings</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Transactions</label>
+            <input type="number" id="expert-num" min="100" max="100000" value="5000" />
+          </div>
+          <div class="form-group">
+            <label>Fraud ratio (0–1)</label>
+            <input type="number" id="expert-fraud" min="0" max="1" step="0.01" value="0.02" />
+            <small>e.g. 0.02 = 2%</small>
+          </div>
+          <div class="form-group">
+            <label>Random seed (optional)</label>
+            <input type="number" id="expert-seed" placeholder="e.g. 42" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="checkbox-row">
+            <input type="checkbox" id="expert-balance" checked />
+            <label for="expert-balance">Include balance fields</label>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="expert-timestamps" checked />
+            <label for="expert-timestamps">Include timestamps</label>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="expert-realistic" checked />
+            <label for="expert-realistic">Include realistic features (TransactionType, Location, DeviceID, IP, MerchantID, Channel, CustomerAge, Occupation, TransactionDuration, LoginAttempts, AccountBalance, PreviousTransactionDate)</label>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fraud amount multiplier</label>
+            <input type="number" id="expert-mult" min="0.5" max="3" step="0.1" value="1.5" />
+            <small>Fraud tx often larger</small>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="checkbox-row" style="margin-top: 0.5rem;">
+            <input type="checkbox" id="expert-behavioral" />
+            <label for="expert-behavioral">
+              Use behavior-based generator (salary + weekend patterns)
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Behavioral users</label>
+            <input type="number" id="expert-users" min="10" max="500" value="100" />
+            <small>Number of synthetic user profiles</small>
+          </div>
+          <div class="form-group">
+            <label>Months of history</label>
+            <input type="number" id="expert-months" min="6" max="36" value="18" />
+            <small>12–24 months recommended</small>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="btn-generate-expert">Generate</button>
+          <button type="button" class="btn btn-download" id="btn-download-csv-expert" disabled>Download CSV</button>
+          <button type="button" class="btn btn-secondary" id="btn-download-json-expert" disabled>Download JSON</button>
+        </div>
+      </div>
+      <div id="expert-message"></div>
+      <div id="expert-preview" class="card" style="display: none;">
+        <h2>Preview</h2>
+        <div class="stats-bar" id="stats-bar-expert"></div>
+        <div style="overflow-x: auto;">
+          <table class="preview-table" id="preview-table-expert"></table>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-learn" class="panel">
+      <div class="card">
+        <h2>Why synthetic fraud data?</h2>
+        <div class="edu-section">
+          <h3>Privacy & ethics</h3>
+          <p>Real fraud data contains sensitive personal and financial information. Synthetic data is generated from scratch—no real names, accounts, or transactions. Safe to share, teach, and use in open-source projects.</p>
+        </div>
+        <div class="edu-section">
+          <h3>Education & awareness</h3>
+          <p>Understanding what fraud “looks like” in data helps everyone—consumers, analysts, and developers. Use these datasets to learn how fraud detection works without touching real PII.</p>
+        </div>
+        <div class="edu-section">
+          <h3>Machine learning</h3>
+          <p>Fraud is rare and often hidden. Synthetic data lets you control class balance and experiment with transaction patterns. Useful for training and evaluating ML models, benchmarking, and research.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Dataset columns</h2>
+        <ul style="list-style: none; font-size: 0.9rem; color: var(--text-muted);">
+          <li><code style="color: var(--accent);">step</code> — Time step / sequence</li>
+          <li><code style="color: var(--accent);">type</code> / <code style="color: var(--accent);">TransactionType</code> — PAYMENT, TRANSFER, CASH_OUT, DEBIT, CASH_IN</li>
+          <li><code style="color: var(--accent);">amount</code> — Transaction amount</li>
+          <li><code style="color: var(--accent);">nameOrig</code> / <code style="color: var(--accent);">nameDest</code> — Synthetic account IDs</li>
+          <li><code style="color: var(--accent);">oldbalanceOrg</code>, <code style="color: var(--accent);">AccountBalance</code> — Origin balance before tx</li>
+          <li><code style="color: var(--accent);">oldbalanceDest</code> — Destination balance before tx</li>
+          <li><code style="color: var(--accent);">TransactionDuration</code> — Duration in seconds (always generated)</li>
+          <li><code style="color: var(--accent);">timestamp</code>, <code style="color: var(--accent);">hour_of_day</code>, <code style="color: var(--accent);">day_of_week</code>, <code style="color: var(--accent);">PreviousTransactionDate</code> — Time features</li>
+          <li><strong>Realistic features (Expert):</strong> <code style="color: var(--accent);">Location</code>, <code style="color: var(--accent);">DeviceID</code>, <code style="color: var(--accent);">IPAddress</code>, <code style="color: var(--accent);">MerchantID</code>, <code style="color: var(--accent);">Channel</code>, <code style="color: var(--accent);">CustomerAge</code>, <code style="color: var(--accent);">CustomerOccupation</code>, <code style="color: var(--accent);">TransactionDuration</code>, <code style="color: var(--accent);">LoginAttempts</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin;
+
+    let lastData = null;
+    let lastDataExpert = null;
+
+    function showMessage(panelId, type, text) {
+      const el = document.getElementById(panelId);
+      if (!el) return;
+      el.innerHTML = `<div class="message ${type}">${text}</div>`;
+    }
+
+    function renderPreview(panelId, statsId, tableId, data, isExpert) {
+      const preview = document.getElementById(panelId);
+      const statsBar = document.getElementById(statsId);
+      const table = document.getElementById(tableId);
+      if (!data || !data.length) return;
+      const total = data.length;
+      statsBar.innerHTML = `
+        <span>Total: <strong>${total}</strong></span>
+      `;
+      const head = Object.keys(data[0]);
+      table.innerHTML = `
+        <thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${data.slice(0, 15).map(row => `
+            <tr>
+              ${head.map(k => `<td>${typeof row[k] === 'number' ? row[k] : row[k]}</td>`).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+      preview.style.display = 'block';
+    }
+
+    function download(content, filename, mime) {
+      const a = document.createElement('a');
+      a.href = 'data:' + mime + ';charset=utf-8,' + encodeURIComponent(content);
+      a.download = filename;
+      a.click();
+    }
+
+    function toCSV(data) {
+      if (!data || !data.length) return '';
+      const keys = Object.keys(data[0]);
+      const row = (obj) => keys.map(k => {
+        const v = obj[k];
+        if (v == null) return '';
+        const s = String(v);
+        return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(',');
+      return [keys.join(','), ...data.map(row)].join('\r\n');
+    }
+
+    async function generateSimple() {
+      const num = parseInt(document.getElementById('simple-num').value, 10) || 1000;
+      const fraudPct = parseFloat(document.getElementById('simple-fraud').value) || 2;
+      const fraudRatio = fraudPct / 100;
+      const btn = document.getElementById('btn-generate-simple');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Generating...';
+      showMessage('simple-message', 'info', 'Generating your dataset...');
+      try {
+        const res = await fetch(API + '/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            num_transactions: num,
+            fraud_ratio: fraudRatio,
+            format: 'json',
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || res.statusText);
+        }
+        lastData = await res.json();
+        renderPreview('simple-preview', 'stats-bar', 'preview-table', lastData, false);
+        document.getElementById('btn-download-csv').disabled = false;
+        document.getElementById('btn-download-json').disabled = false;
+        showMessage('simple-message', 'success', `Generated ${lastData.length} transactions. Use the buttons above to download.`);
+      } catch (e) {
+        showMessage('simple-message', 'error', e.message || 'Generation failed.');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Generate dataset';
+    }
+
+    async function generateExpert() {
+      const num = parseInt(document.getElementById('expert-num').value, 10) || 5000;
+      const fraud = parseFloat(document.getElementById('expert-fraud').value) || 0.02;
+      const seedEl = document.getElementById('expert-seed');
+      const seed = seedEl.value.trim() ? parseInt(seedEl.value, 10) : null;
+      const includeBalance = document.getElementById('expert-balance').checked;
+      const includeTimestamps = document.getElementById('expert-timestamps').checked;
+      const includeRealistic = document.getElementById('expert-realistic').checked;
+      const mult = parseFloat(document.getElementById('expert-mult').value) || 1.5;
+      const useBehavioral = document.getElementById('expert-behavioral').checked;
+      const users = parseInt(document.getElementById('expert-users').value, 10) || 100;
+      const months = parseInt(document.getElementById('expert-months').value, 10) || 18;
+      const btn = document.getElementById('btn-generate-expert');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Generating...';
+      showMessage('expert-message', 'info', 'Generating...');
+      try {
+        const url = useBehavioral ? '/api/generate_behavioral' : '/api/generate';
+        const body = useBehavioral
+          ? {
+              num_users: users,
+              months,
+              seed,
+              // Behavioral generator already adds pattern-based metadata
+              format: 'json',
+            }
+          : {
+              num_transactions: num,
+              fraud_ratio: fraud,
+              seed,
+              include_balance_fields: includeBalance,
+              include_timestamps: includeTimestamps,
+              include_realistic_features: includeRealistic,
+              fraud_amount_multiplier: mult,
+              format: 'json',
+            };
+
+        const res = await fetch(API + url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || res.statusText);
+        }
+        lastDataExpert = await res.json();
+        renderPreview('expert-preview', 'stats-bar-expert', 'preview-table-expert', lastDataExpert, true);
+        document.getElementById('btn-download-csv-expert').disabled = false;
+        document.getElementById('btn-download-json-expert').disabled = false;
+        const modeLabel = useBehavioral ? 'behavior-based transactions (with patterns & deviation scores)' : 'transactions';
+        showMessage('expert-message', 'success', `Generated ${lastDataExpert.length} ${modeLabel}.`);
+      } catch (e) {
+        showMessage('expert-message', 'error', e.message || 'Generation failed.');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Generate';
+    }
+
+    async function getCsv(data) {
+      const res = await fetch(API + '/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          num_transactions: data.length,
+          fraud_ratio: 0.02,
+          format: 'csv',
+        }),
+      });
+      if (!res.ok) return null;
+      return res.text();
+    }
+
+    document.getElementById('btn-generate-simple').addEventListener('click', generateSimple);
+    document.getElementById('btn-download-csv').addEventListener('click', () => {
+      if (!lastData || !lastData.length) return;
+      download(toCSV(lastData), 'synthetic_fraud_dataset.csv', 'text/csv');
+    });
+    document.getElementById('btn-download-json').addEventListener('click', () => {
+      if (!lastData) return;
+      download(JSON.stringify(lastData, null, 2), 'synthetic_fraud_dataset.json', 'application/json');
+    });
+
+    document.getElementById('btn-save-to-db').addEventListener('click', async () => {
+      const num = parseInt(document.getElementById('simple-num').value, 10) || 1000;
+      const fraudPct = parseFloat(document.getElementById('simple-fraud').value) || 2;
+      const dbPath = document.getElementById('db-path').value.trim() || 'data/fraud_data.db';
+      const table = document.getElementById('db-table').value.trim() || 'transactions';
+      const ifExists = document.getElementById('db-if-exists').value;
+      const msgEl = document.getElementById('db-message');
+      msgEl.innerHTML = '<div class="message info">Saving to database...</div>';
+      try {
+        const res = await fetch(API + '/api/save-to-db', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            num_transactions: num,
+            fraud_ratio: fraudPct / 100,
+            db_path: dbPath,
+            table,
+            if_exists: ifExists,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+        msgEl.innerHTML = `<div class="message success">Saved ${data.rows_inserted} rows to ${data.db_path} (table: ${data.table})</div>`;
+      } catch (e) {
+        msgEl.innerHTML = `<div class="message error">${e.message || 'Failed to save.'}</div>`;
+      }
+    });
+
+    document.getElementById('btn-load-from-db').addEventListener('click', async () => {
+      const dbPath = document.getElementById('load-db-path').value.trim();
+      const table = document.getElementById('load-db-table').value.trim() || 'transactions';
+      const limit = parseInt(document.getElementById('load-db-limit').value, 10) || 500;
+      const msgEl = document.getElementById('load-db-message');
+      const previewEl = document.getElementById('load-db-preview');
+      msgEl.innerHTML = '<div class="message info">Loading...</div>';
+      previewEl.style.display = 'none';
+      try {
+        const res = await fetch(API + '/api/load-from-db', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ db_path: dbPath, table, limit }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+        const rows = data.data || [];
+        msgEl.innerHTML = `<div class="message success">Loaded ${data.count} rows.</div>`;
+        if (rows.length) {
+          document.getElementById('load-stats-bar').innerHTML = `
+            <span>Rows: <strong>${rows.length}</strong></span>
+          `;
+          const head = Object.keys(rows[0]);
+          document.getElementById('load-preview-table').innerHTML = `
+            <thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+            <tbody>
+              ${rows.slice(0, 20).map(row => `
+                <tr>
+                  ${head.map(k => `<td>${row[k] != null ? row[k] : ''}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          `;
+          previewEl.style.display = 'block';
+        }
+      } catch (e) {
+        msgEl.innerHTML = `<div class="message error">${e.message || 'Failed to load.'}</div>`;
+      }
+    });
+
+    document.getElementById('btn-generate-expert').addEventListener('click', generateExpert);
+    document.getElementById('btn-download-csv-expert').addEventListener('click', () => {
+      if (!lastDataExpert || !lastDataExpert.length) return;
+      download(toCSV(lastDataExpert), 'synthetic_fraud_expert.csv', 'text/csv');
+    });
+    document.getElementById('btn-download-json-expert').addEventListener('click', () => {
+      if (!lastDataExpert) return;
+      download(JSON.stringify(lastDataExpert, null, 2), 'synthetic_fraud_expert.json', 'application/json');
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    const presets = {
+      education: { name: 'Education', desc: '500 tx, 5% fraud' },
+      ml_balanced: { name: 'ML balanced', desc: '10k tx, 2% fraud' },
+      ml_imbalanced: { name: 'ML imbalanced', desc: '50k tx, 0.1% fraud' },
+      quick_demo: { name: 'Quick demo', desc: '100 tx, 10% fraud' },
+    };
+    const grid = document.getElementById('preset-grid');
+    Object.entries(presets).forEach(([key, { name, desc }]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'preset-btn';
+      b.innerHTML = `<strong>${name}</strong><span>${desc}</span>`;
+      b.addEventListener('click', async () => {
+        grid.querySelectorAll('.preset-btn').forEach(x => x.style.borderColor = '');
+        b.style.borderColor = 'var(--accent)';
+        const res = await fetch(API + '/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ preset: key, format: 'json' }),
+        });
+        if (!res.ok) return;
+        lastData = await res.json();
+        document.getElementById('simple-num').value = lastData.length;
+        renderPreview('simple-preview', 'stats-bar', 'preview-table', lastData, false);
+        document.getElementById('btn-download-csv').disabled = false;
+        document.getElementById('btn-download-json').disabled = false;
+        showMessage('simple-message', 'success', `Loaded "${name}" dataset: ${lastData.length} transactions. You can download CSV/JSON below.`);
+      });
+      grid.appendChild(b);
+    });
+  </script>
+</body>
+</html>
